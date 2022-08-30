@@ -43,6 +43,8 @@ func (c *Client) StartBackup(ctx context.Context) (*createdBackup, error) {
 
 	req = req.WithContext(ctx)
 	req.Header.Add("X-Api-Key", c.APIKey)
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -72,6 +74,8 @@ func (b *createdBackup) Wait(ctx context.Context) error {
 
 			req = req.WithContext(ctx)
 			req.Header.Add("X-Api-Key", b.client.APIKey)
+			req.Header.Add("Accept", "application/json")
+			req.Header.Add("Content-Type", "application/json")
 
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
@@ -109,6 +113,8 @@ func (c *Client) DownloadLatestBackup(ctx context.Context) (io.ReadCloser, *back
 
 	req = req.WithContext(ctx)
 	req.Header.Add("X-Api-Key", c.APIKey)
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -151,6 +157,8 @@ func (b *backup) Delete(ctx context.Context) error {
 
 	req = req.WithContext(ctx)
 	req.Header.Add("X-Api-Key", b.client.APIKey)
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
