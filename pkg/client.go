@@ -11,8 +11,9 @@ import (
 )
 
 type Client struct {
-	APIKey  string
-	BaseURL string
+	APIKey     string
+	BaseURL    string
+	ApiVersion int
 }
 
 type commandReq struct {
@@ -36,7 +37,7 @@ func (c *Client) StartBackup(ctx context.Context) (*createdBackup, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/v3/command", c.BaseURL), &buf)
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/v%d/command", c.BaseURL, c.ApiVersion), &buf)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +68,7 @@ func (b *createdBackup) Wait(ctx context.Context) error {
 	for {
 		select {
 		case <-timer.C:
-			req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/v3/command/%d", b.client.BaseURL, b.id), nil)
+			req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/v%d/command/%d", b.client.BaseURL, b.client.ApiVersion, b.id), nil)
 			if err != nil {
 				return err
 			}
@@ -106,7 +107,7 @@ type backup struct {
 }
 
 func (c *Client) DownloadLatestBackup(ctx context.Context) (io.ReadCloser, *backup, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/v3/system/backup", c.BaseURL), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/v%d/system/backup", c.BaseURL, c.ApiVersion), nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -150,7 +151,7 @@ func (c *Client) DownloadLatestBackup(ctx context.Context) (io.ReadCloser, *back
 }
 
 func (b *backup) Delete(ctx context.Context) error {
-	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/api/v3/system/backup/%d", b.client.BaseURL, b.Id), nil)
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/api/v%d/system/backup/%d", b.client.BaseURL, b.client.ApiVersion, b.Id), nil)
 	if err != nil {
 		return err
 	}

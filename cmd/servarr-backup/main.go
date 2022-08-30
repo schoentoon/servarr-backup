@@ -16,6 +16,7 @@ func main() {
 	client := pkg.Client{}
 	flag.StringVar(&client.BaseURL, "baseurl", "", "Base url of the servarr")
 	flag.StringVar(&client.APIKey, "apikey", "", "Api key for the servarr")
+	flag.IntVar(&client.ApiVersion, "apiversion", 3, "Set the api version, this should be 1 for lidarr and 3 for radarr/sonarr")
 	output := flag.String("output", "-", "Where to output the zip file to (- is stdout)")
 	extract := flag.Bool("extract", false, "Should we extract the zip file?")
 	delete := flag.Bool("delete", false, "Should the backup be deleted from the servarr afterwards?")
