@@ -18,6 +18,7 @@ func main() {
 	flag.StringVar(&client.APIKey, "apikey", "", "Api key for the servarr")
 	output := flag.String("output", "-", "Where to output the zip file to (- is stdout)")
 	extract := flag.Bool("extract", false, "Should we extract the zip file?")
+	delete := flag.Bool("delete", false, "Should the backup be deleted from the servarr afterwards?")
 	flag.Parse()
 
 	if client.BaseURL == "" {
@@ -32,21 +33,26 @@ func main() {
 
 	ctx := context.Background()
 
-	backup, err := client.StartBackup(ctx)
+	createdBackup, err := client.StartBackup(ctx)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	err = backup.Wait(ctx)
+	err = createdBackup.Wait(ctx)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	zipFile, err := client.DownloadLatestBackup(ctx)
+	zipFile, backup, err := client.DownloadLatestBackup(ctx)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 	defer zipFile.Close()
+
+	// if we have the -delete flag set, we schedule a backup.Delete() through a defer
+	if *delete {
+		defer backup.Delete(ctx)
+	}
 
 	if !*extract {
 		outputFile := os.Stdout

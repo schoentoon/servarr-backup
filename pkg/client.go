@@ -24,12 +24,12 @@ type commandResp struct {
 	Status string `json:"status"`
 }
 
-type backup struct {
+type createdBackup struct {
 	id     int
 	client *Client
 }
 
-func (c *Client) StartBackup(ctx context.Context) (*backup, error) {
+func (c *Client) StartBackup(ctx context.Context) (*createdBackup, error) {
 	var buf bytes.Buffer
 	err := json.NewEncoder(&buf).Encode(commandReq{Name: "Backup"})
 	if err != nil {
@@ -56,10 +56,10 @@ func (c *Client) StartBackup(ctx context.Context) (*backup, error) {
 		return nil, err
 	}
 
-	return &backup{id: commandResp.Id, client: c}, nil
+	return &createdBackup{id: commandResp.Id, client: c}, nil
 }
 
-func (b *backup) Wait(ctx context.Context) error {
+func (b *createdBackup) Wait(ctx context.Context) error {
 	timer := time.NewTicker(time.Second)
 	defer timer.Stop()
 	for {
@@ -94,15 +94,17 @@ func (b *backup) Wait(ctx context.Context) error {
 	}
 }
 
-type backups struct {
-	Path string `json:"path"`
-	Type string `json:"type"`
+type backup struct {
+	Path   string `json:"path"`
+	Type   string `json:"type"`
+	Id     int    `json:"id"`
+	client *Client
 }
 
-func (c *Client) DownloadLatestBackup(ctx context.Context) (io.ReadCloser, error) {
+func (c *Client) DownloadLatestBackup(ctx context.Context) (io.ReadCloser, *backup, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/v3/system/backup", c.BaseURL), nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	req = req.WithContext(ctx)
@@ -110,31 +112,51 @@ func (c *Client) DownloadLatestBackup(ctx context.Context) (io.ReadCloser, error
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer resp.Body.Close()
 
-	var backups []backups
+	var backups []backup
 	err = json.NewDecoder(resp.Body).Decode(&backups)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	path := ""
-	for _, backup := range backups {
-		if backup.Type == "manual" {
-			path = backup.Path
+	var backup *backup
+	for _, b := range backups {
+		if b.Type == "manual" {
+			backup = &b
 			break
 		}
 	}
 
-	if path == "" {
-		return nil, fmt.Errorf("No recent manual backup found")
+	if backup != nil && backup.Path == "" {
+		return nil, nil, fmt.Errorf("No recent manual backup found")
 	}
 
-	resp, err = http.Get(fmt.Sprintf("%s%s", c.BaseURL, path))
+	resp, err = http.Get(fmt.Sprintf("%s%s", c.BaseURL, backup.Path))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp.Body, nil
+	backup.client = c
+
+	return resp.Body, backup, nil
+}
+
+func (b *backup) Delete(ctx context.Context) error {
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/api/v3/system/backup/%d", b.client.BaseURL, b.Id), nil)
+	if err != nil {
+		return err
+	}
+
+	req = req.WithContext(ctx)
+	req.Header.Add("X-Api-Key", b.client.APIKey)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
 }
