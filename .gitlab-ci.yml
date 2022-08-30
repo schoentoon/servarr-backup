@@ -1,0 +1,26 @@
+stages:
+  - test
+  - build
+
+golangci-linter:
+  stage: test
+  image: golangci/golangci-lint:latest
+  allow_failure: true
+  script:
+    - golangci-lint run -v --timeout 1h
+
+build:
+  stage: build
+  image: golang:latest
+  variables:
+    CGO_ENABLED: "0"
+  script:
+    - find cmd -type d -mindepth 1 -maxdepth 1 | xargs -i go build ./{}/...
+  artifacts:
+    untracked: true
+
+sast:
+  stage: test
+include:
+- template: Security/SAST.gitlab-ci.yml
+
