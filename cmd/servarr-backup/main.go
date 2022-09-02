@@ -52,7 +52,7 @@ func main() {
 
 	// if we have the -delete flag set, we schedule a backup.Delete() through a defer
 	if *delete {
-		defer backup.Delete(ctx)
+		defer backup.Delete(ctx) // nolint:errcheck
 	}
 
 	if !*extract {
