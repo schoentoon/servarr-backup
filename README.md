@@ -2,6 +2,11 @@
 
 This tool will help making backups of [radarr](https://github.com/Radarr/Radarr), [sonarr](https://github.com/Sonarr/Sonarr) and [lidarr](https://github.com/lidarr/Lidarr) into [restic](https://github.com/restic/restic), [borg](https://github.com/borgbackup/borg), whatever tool easier.
 
+## Download
+
+If you have golang installed you can install this by using `go install github.com/schoentoon/servarr-backup/cmd/servarr-backup@latest`.
+Otherwise you can download it from the [Gitlab CI](https://gitlab.com/schoentoon/servarr-backup/-/pipelines/latest).
+
 ## Usage
 
 ```asciidoc
