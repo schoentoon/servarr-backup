@@ -1,5 +1,9 @@
 # Servarr-backup
 
+[![License](https://img.shields.io/github/license/schoentoon/servarr-backup.svg)](https://github.com/schoentoon/servarr-backup/blob/master/LICENSE)
+[![Gitlab pipeline status](https://gitlab.com/schoentoon/servarr-backup/badges/master/pipeline.svg)](https://gitlab.com/schoentoon/servarr-backup)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/schoentoon/servarr-backup)
+
 This tool will help making backups of [radarr](https://github.com/Radarr/Radarr), [sonarr](https://github.com/Sonarr/Sonarr) and [lidarr](https://github.com/lidarr/Lidarr) into [restic](https://github.com/restic/restic), [borg](https://github.com/borgbackup/borg), whatever tool easier.
 
 ## Download
