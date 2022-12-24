@@ -9,8 +9,10 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /bin/app ./cmd/servarr-backup/...
 
-FROM gcr.io/distroless/base
+FROM docker.io/alpine
 
-COPY --from=builder /bin/app /bin/app
+COPY --from=builder /bin/app /usr/bin/servarr-backup
 
-CMD [ "/bin/app" ]
+COPY --from=docker.io/restic/restic /usr/bin/restic /usr/bin/restic
+
+CMD [ "/usr/bin/servarr-backup" ]
