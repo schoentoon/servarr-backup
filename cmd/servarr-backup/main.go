@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/schoentoon/servarr-backup/pkg"
 	"github.com/sirupsen/logrus"
@@ -20,6 +21,7 @@ func main() {
 	output := flag.String("output", "-", "Where to output the zip file to (- is stdout)")
 	extract := flag.Bool("extract", false, "Should we extract the zip file?")
 	delete := flag.Bool("delete", false, "Should the backup be deleted from the servarr afterwards?")
+	timeout := flag.String("timeout", "", "We should give up after this time")
 	flag.Parse()
 
 	if client.BaseURL == "" {
@@ -33,6 +35,17 @@ func main() {
 	}
 
 	ctx := context.Background()
+
+	if *timeout != "" {
+		dur, err := time.ParseDuration(*timeout)
+		if err != nil {
+			logrus.Fatal(err)
+		}
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, dur)
+
+		defer cancel()
+	}
 
 	createdBackup, err := client.StartBackup(ctx)
 	if err != nil {
