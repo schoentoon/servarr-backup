@@ -84,6 +84,10 @@ func (b *createdBackup) Wait(ctx context.Context) error {
 			}
 			defer resp.Body.Close()
 
+			if resp.StatusCode != http.StatusOK {
+				return fmt.Errorf("Wrong HTTP status while waiting for backup: %s", resp.Status)
+			}
+
 			var commandResp commandResp
 			err = json.NewDecoder(resp.Body).Decode(&commandResp)
 			if err != nil {
